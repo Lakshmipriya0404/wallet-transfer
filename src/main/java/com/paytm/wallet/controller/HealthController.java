@@ -1,5 +1,7 @@
 package com.paytm.wallet.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,14 +19,13 @@ public class HealthController {
     public String healthz() {
         return "OK";
     }
-
     @GetMapping("/readyz")
-    public String readyz() {
+    public ResponseEntity<String> readyz() {
         try {
             jdbcTemplate.execute("SELECT 1");
-            return "READY";
+            return ResponseEntity.ok("READY");
         } catch (Exception e) {
-            throw new RuntimeException("Database not ready", e);
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Database not ready");
         }
     }
 }
