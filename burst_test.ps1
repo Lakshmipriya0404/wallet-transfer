@@ -27,8 +27,8 @@ try {
 Write-Host "`n[2] Waiting for API readiness..." -NoNewline
 while ($true) {
     try {
-        $response = Invoke-RestMethod -Uri "$ApiUrl/readyz" -ErrorAction Stop
-        if ($response.status -eq "UP") { break }
+        $response = Invoke-WebRequest -Uri "$ApiUrl/readyz" -UseBasicParsing -ErrorAction Stop
+        if ($response.StatusCode -eq 200) { break }
     } catch {}
     Write-Host "." -NoNewline
     Start-Sleep -Seconds 1
