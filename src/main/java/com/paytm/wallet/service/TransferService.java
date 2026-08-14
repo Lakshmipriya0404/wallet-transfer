@@ -38,7 +38,17 @@ public class TransferService {
 
         UUID transferId = UUID.randomUUID();
 
-        // 1. Idempotency Guard (Insert immediately, ON CONFLICT handles concurrent retries)
+        // 1. Ensure both sender and recipient wallets exist (Race-free get-or-create) to satisfy FK constraints
+        jdbcTemplate.update(
+            "INSERT INTO wallets (user_id, balance_paise) VALUES (?, 0) ON CONFLICT (user_id) DO NOTHING",
+            fromUserId
+        );
+        jdbcTemplate.update(
+            "INSERT INTO wallets (user_id, balance_paise) VALUES (?, 0) ON CONFLICT (user_id) DO NOTHING",
+            request.toUser()
+        );
+
+        // 2. Idempotency Guard (Insert immediately, ON CONFLICT handles concurrent retries)
         int inserted = jdbcTemplate.update(
             "INSERT INTO transfers (id, idempotency_key, from_user_id, to_user_id, amount_paise) VALUES (?, ?, ?, ?, ?) ON CONFLICT (from_user_id, idempotency_key) DO NOTHING",
             transferId, request.idempotencyKey(), fromUserId, request.toUser(), request.amountPaise()
@@ -48,12 +58,6 @@ public class TransferService {
             // Replay detected, abort regular flow and return standard response/conflict
             return handleReplay(fromUserId, request);
         }
-
-        // 2. Ensure recipient wallet exists (Race-free get-or-create)
-        jdbcTemplate.update(
-            "INSERT INTO wallets (user_id, balance_paise) VALUES (?, 0) ON CONFLICT (user_id) DO NOTHING",
-            request.toUser()
-        );
 
         // 3. Deterministic Balance Mutation to prevent deadlocks
         if (fromUserId.compareTo(request.toUser()) < 0) {

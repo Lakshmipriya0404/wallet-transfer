@@ -3,7 +3,7 @@ set -e
 
 # Configuration
 API_URL=${1:-"http://localhost:8080"}
-DB_URL=${2:-"postgres://postgres:postgres@localhost:5432/wallet"}
+DB_URL=${2:-"postgres://postgres:postgres@localhost:5433/wallet"}
 
 echo "========================================================="
 echo " Paytm Wallet - Concurrency Burst & Idempotency Test Gate"
