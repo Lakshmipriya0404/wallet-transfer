@@ -42,6 +42,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("WALLET_NOT_FOUND", ex.getMessage()));
     }
 
+    @ExceptionHandler(TransferNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleTransferNotFound(TransferNotFoundException ex) {
+        log.warn("Transfer not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("TRANSFER_NOT_FOUND", ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
