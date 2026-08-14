@@ -38,6 +38,21 @@ ON CONFLICT (user_id) DO NOTHING;
 **Why is this the best approach?**
 It is a single, atomic operation handled natively by the database engine. If ten concurrent requests try to create the wallet, the first one succeeds and the other nine gracefully execute `DO NOTHING` without throwing exceptions or corrupting state.
 
+```mermaid
+sequenceDiagram
+    participant App as Application
+    participant DB as PostgreSQL
+    
+    Note over App, DB: Transaction Begins
+    App->>DB: INSERT INTO transfers (Idempotency Check)
+    App->>DB: INSERT INTO wallets (Upsert ON CONFLICT DO NOTHING)
+    Note over DB: PostgreSQL ensures only 1 row is created
+    App->>DB: SELECT * FROM wallets FOR UPDATE
+    Note over DB: Locks acquired in strict alphabetical order
+    App->>DB: UPDATE wallets SET balance = balance +/- amount
+    Note over App, DB: Transaction Commits
+```
+
 **Rejected Heavier Alternatives:**
 1. **Serializable Transaction Isolation:** Setting isolation level to `SERIALIZABLE` would prevent the race but at the cost of significantly reduced throughput and complex application-level retry logic (`@Retryable`) to handle serialization anomalies (deadlocks/aborts).
 2. **Explicit Table Locks / Distributed Locks:** Taking an exclusive lock on the `wallets` table or using a distributed lock (e.g., Redis) introduces unnecessary operational complexity, potential single points of failure, and severely throttles concurrency.
