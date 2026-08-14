@@ -3,7 +3,7 @@
 This repository contains the solution for the Paytm PML Take-Home Assignment. It is a highly robust, concurrent, and observable API for a wallet and peer-to-peer transfer service.
 
 ## Architecture & Design
-Please refer to the `design.md` file located in the root of this repository for a detailed breakdown of the concurrency strategy, idempotency controls, and NFR priorities.
+Please refer to the `writeup.md` file located in the root of this repository for a detailed breakdown of the concurrency strategy, idempotency controls, and NFR priorities.
 
 ## Local Development
 To run this project locally:
@@ -13,9 +13,9 @@ To run this project locally:
    ```bash
    docker-compose up -d
    ```
-3. Build and Run the Spring Boot application (Requires Java 21):
+3. Build and Run the Spring Boot application (Requires Java 21 and Maven):
    ```bash
-   ./mvnw spring-boot:run
+   mvn spring-boot:run
    ```
    Or use your IDE to run `WalletApplication.java`.
 
